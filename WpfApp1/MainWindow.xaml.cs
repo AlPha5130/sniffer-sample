@@ -1,7 +1,10 @@
-﻿using SharpPcap;
+﻿using Microsoft.Win32;
+using SharpPcap;
+using SharpPcap.LibPcap;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -23,7 +26,7 @@ namespace WpfApp1
     public partial class MainWindow : Window
     {
         private readonly CaptureDeviceList devices;
-        private ILiveDevice device;
+        private ICaptureDevice device;
         public ObservableCollection<PacketRecord> Records { get; private set; }
         private bool captureRunning = false;
 
@@ -38,6 +41,8 @@ namespace WpfApp1
         private readonly TimeSpan updateStatisticsInterval = new(0, 0, 1);
         private bool statisticsNeedsUpdate = false;
         private ICaptureStatistics captureStatistics;
+
+        private readonly StringBuilder builder = new();
 
         public MainWindow()
         {
@@ -76,9 +81,6 @@ namespace WpfApp1
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            packetCount = 0;
-            packetQueue = new();
-            Records.Clear();
             lastStatisticsOutput = DateTime.Now;
 
             StartCapture();
@@ -109,7 +111,6 @@ namespace WpfApp1
             if (captureRunning)
             {
                 device.StopCapture();
-                device.Close();
                 device.OnPacketArrival -= AddPacketRecord;
 
                 backgroundThreadStop = true;
@@ -130,22 +131,27 @@ namespace WpfApp1
 
         private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
-
-        }
-
-        private void IPTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-
-        }
-
-        private void ResetButton_Click(object sender, RoutedEventArgs e)
-        {
-
+            ClearUI();
+            ClearCounter();
         }
 
         private void InterfaceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             device = (from d in devices where d.Description == InterfaceComboBox.SelectedItem.ToString() select d).ToArray()[0];
+        }
+
+        private void ClearUI()
+        {
+            Records.Clear();
+            captureList.Clear();
+            packetQueue.Clear();
+            HexContent.Clear();
+        }
+
+        private void ClearCounter()
+        {
+            packetCount = 0;
+            packetQueue = new();
         }
 
         private void BackgroundThread()
@@ -188,9 +194,10 @@ namespace WpfApp1
                     {
                         Dispatcher.BeginInvoke(() =>
                         {
-                            foreach (var packet in packetQueue.Reverse())
+                            while (packetQueue.Count != 0)
                             {
-                                Records.Add(packet);
+                                var item = packetQueue.Dequeue();
+                                Records.Add(item);
                             }
                         });
                         UpdateStatistics();
@@ -211,6 +218,103 @@ namespace WpfApp1
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             StopCapture();
+            device.Close();
+        }
+
+        private void PacketList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            HexContent.Clear();
+            if (e.AddedItems.Count > 0)
+            {
+                var selectedRecord = e.AddedItems[0];
+                if (selectedRecord != null)
+                {
+                    FillHex(((PacketRecord)selectedRecord).Content);
+                }
+            }
+        }
+
+        private void FillHex(byte[] data)
+        {
+            int height = (int)Math.Ceiling(data.Length / 16.0);
+            builder.Clear();
+            builder.AppendLine("       00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F");
+            for (int i = 0; i < height; i++)
+            {
+                int start = i * 16;
+                int end = Math.Min(i * 16 + 15, data.Length - 1) + 1;
+                int padBytes = (i + 1) * 16 - end;
+                byte[] slice = data[start..end];
+                builder.Append((i * 16).ToString("X6"));
+                foreach (byte b in slice)
+                {
+                    builder.Append($" {b.ToString("X2")}");
+                }
+                builder.Append("".PadRight(padBytes * 3));
+                builder.Append("    ");
+                foreach (byte b in slice)
+                {
+                    builder.Append(b > 31 && b < 128 ? (char)b : '.');
+                }
+                builder.AppendLine();
+            }
+            HexContent.Text = builder.ToString();
+        }
+
+        private void LoadButton_Click(object sender, RoutedEventArgs e)
+        {
+            int no = 0;
+            OpenFileDialog ofd = new()
+            {
+                Filter = "Pcap File(*.pcap)|*.pcap",
+                Multiselect = false
+            };
+            ofd.ShowDialog();
+            if (ofd.FileName != "")
+            {
+                device = new CaptureFileReaderDevice(ofd.FileName);
+                ClearUI();
+                ClearCounter();
+                device.OnPacketArrival += (object s, PacketCapture e) =>
+                {
+                    var packet = new PacketRecord(no, e.GetPacket());
+                    no++;
+                    Records.Add(packet);
+                };
+                device.Open();
+                device.Capture();
+                StatusText.Text = $"Read {no} packets.";
+            }
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Records.Count == 0)
+            {
+                MessageBox.Show("No records to save.", "Demo capture", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            SaveFileDialog sfd = new()
+            {
+                Filter = "Pcap File(*.pcap)|*.pcap",
+            };
+            sfd.ShowDialog();
+            if (sfd.FileName != "")
+            {
+                using var stream = File.Open(sfd.FileName, FileMode.Create);
+                using BinaryWriter writer = new(stream);
+                writer.Write(0xa1b2c3d4);
+                writer.Write((ushort)0x2);
+                writer.Write((ushort)0x4);
+                writer.Write(0);
+                writer.Write((uint)0);
+                writer.Write((uint)65535);
+                writer.Write((uint)device.LinkType);
+                foreach (var rec in Records)
+                {
+                    stream.Write(rec.MakePcapArchive());
+                }
+            }
         }
     }
 }

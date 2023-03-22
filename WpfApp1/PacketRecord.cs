@@ -20,27 +20,58 @@ namespace WpfApp1
         public string Type { get; private set; }
         public int Length { get { return rawCapture.PacketLength; } }
         public string Timestamp { get { return rawCapture.Timeval.Date.ToString(); } }
+        public byte[] Content { get; private set; }
 
-        public PacketRecord(int count, RawCapture capture)
+        public PacketRecord(int number, RawCapture capture)
         {
             rawCapture = capture;
-            No = count;
+            No = number;
             packet = capture.GetPacket();
             GetDetail();
+        }
+
+        public byte[] MakePcapArchive()
+        {
+            byte[] arr = new byte[rawCapture.Data.Length + 16];
+            byte[] sec = BitConverter.GetBytes((uint)rawCapture.Timeval.Seconds);
+            byte[] msec = BitConverter.GetBytes((uint)rawCapture.Timeval.MicroSeconds);
+            byte[] incllen = BitConverter.GetBytes((uint)rawCapture.Data.Length);
+            byte[] origlen = BitConverter.GetBytes((uint)rawCapture.Data.Length);
+            sec.CopyTo(arr, 0);
+            msec.CopyTo(arr, 4);
+            incllen.CopyTo(arr, 8);
+            origlen.CopyTo(arr, 12);
+            rawCapture.Data.CopyTo(arr, 16);
+            return arr;
         }
 
         private void GetDetail()
         {
             var ipkt = packet.Extract<IPPacket>();
-            if (ipkt == null)
+            if (ipkt != null)
             {
-                SourceAddress = "N/A";
-                DestinationAddress = "N/A";
-                SourcePort = "N/A";
-                DestinationPort = "N/A";
-                Type = "Unknown";
-                return;
+                GetIPPacketDetail(ipkt);
             }
+            else
+            {
+                var apkt = packet.Extract<ArpPacket>();
+                GetArpPacketDetail(apkt);
+            }
+
+        }
+
+        private void GetArpPacketDetail(ArpPacket apkt)
+        {
+            Type = apkt.ProtocolAddressType.ToString();
+            SourceAddress = apkt.SenderHardwareAddress.ToString();
+            DestinationAddress = apkt.TargetHardwareAddress.ToString();
+            SourcePort = "N/A";
+            DestinationPort = "N/A";
+            Content = apkt.Bytes;
+        }
+
+        private void GetIPPacketDetail(IPPacket ipkt)
+        {
             SourceAddress = ipkt.SourceAddress.ToString();
             DestinationAddress = ipkt.DestinationAddress.ToString();
             Type = ipkt.Protocol.ToString();
@@ -51,6 +82,7 @@ namespace WpfApp1
                         var tpkt = ipkt.Extract<TcpPacket>();
                         SourcePort = tpkt.SourcePort.ToString();
                         DestinationPort = tpkt.DestinationPort.ToString();
+                        Content = tpkt.Bytes;
                         return;
                     }
                 case ProtocolType.Udp:
@@ -58,12 +90,30 @@ namespace WpfApp1
                         var upkt = ipkt.Extract<UdpPacket>();
                         SourcePort = upkt.SourcePort.ToString();
                         DestinationPort = upkt.DestinationPort.ToString();
+                        Content = upkt.Bytes;
+                        return;
+                    }
+                case ProtocolType.Icmp:
+                    {
+                        var icpkt = ipkt.Extract<IcmpV4Packet>();
+                        SourcePort = "N/A";
+                        DestinationPort = "N/A";
+                        Content = icpkt.Bytes;
+                        return;
+                    }
+                case ProtocolType.IcmpV6:
+                    {
+                        var icpkt = ipkt.Extract<IcmpV6Packet>();
+                        SourcePort = "N/A";
+                        DestinationPort = "N/A";
+                        Content = icpkt.Bytes;
                         return;
                     }
                 default:
                     {
                         SourcePort = "N/A";
                         DestinationPort = "N/A";
+                        Content = ipkt.Bytes;
                         return;
                     }
             }

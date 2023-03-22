@@ -11,34 +11,30 @@
     <Grid>
         <Button x:Name="StartButton" Content="Start" HorizontalAlignment="Left" Margin="555,10,0,0" VerticalAlignment="Top" Width="66" Height="26" Click="StartButton_Click"/>
         <Button x:Name="StopButton" IsEnabled="False" Content="Stop" HorizontalAlignment="Left" Margin="626,10,0,0" VerticalAlignment="Top" Width="66" Height="26" Click="StopButton_Click"/>
-        <Label Content="Filter protocol:" HorizontalAlignment="Left" Margin="238,41,0,0" VerticalAlignment="Top"/>
-        <ComboBox x:Name="ProtocolComboBox" HorizontalAlignment="Left" Margin="337,43,0,0" VerticalAlignment="Top" Width="120"/>
-        <Label Content="Filter IP:" HorizontalAlignment="Left" Margin="462,41,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="IPTextBox" HorizontalAlignment="Left" Margin="523,45,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="146" TextChanged="IPTextBox_TextChanged"/>
-        <ListView x:Name="PacketList" Margin="10,71,10,170">
+        <ListView x:Name="PacketList" Margin="10,41,10,170" SelectionChanged="PacketList_SelectionChanged" SelectionMode="Single">
             <ListView.View>
                 <GridView>
+                    <GridViewColumn x:Name="No" Header="#" DisplayMemberBinding="{Binding No}"/>
                     <GridViewColumn x:Name="SourceIPColumn" Header="Source address" DisplayMemberBinding="{Binding SourceAddress}"/>
                     <GridViewColumn x:Name="SourcePortColumn" Header="Source port" DisplayMemberBinding="{Binding SourcePort}"/>
                     <GridViewColumn x:Name="DestinationIPColumn" Header="Destination address" DisplayMemberBinding="{Binding DestinationAddress}"/>
                     <GridViewColumn x:Name="DestinationPortColumn" Header="Destination port" DisplayMemberBinding="{Binding DestinationPort}"/>
                     <GridViewColumn x:Name="TypeColumn" Header="Type" DisplayMemberBinding="{Binding Type}"/>
                     <GridViewColumn x:Name="LengthColumn" Header="Length" DisplayMemberBinding="{Binding Length}"/>
-                    <GridViewColumn x:Name="TimestampColumn" Header="Timestamp" DisplayMemberBinding="{Binding Time}"/>
+                    <GridViewColumn x:Name="TimestampColumn" Header="Timestamp" DisplayMemberBinding="{Binding Timestamp}"/>
                 </GridView>
             </ListView.View>
         </ListView>
         <Button x:Name="ClearButton" Content="Clear" HorizontalAlignment="Left" Margin="697,10,0,0" VerticalAlignment="Top" Width="66" Height="26" Click="ClearButton_Click"/>
-        <TextBlock HorizontalAlignment="Left" Margin="24,317,0,0" TextWrapping="Wrap" Text="hexValue" VerticalAlignment="Top"/>
-        <TextBlock HorizontalAlignment="Left" Margin="458,309,0,0" TextWrapping="Wrap" Text="decodedValue" VerticalAlignment="Top"/>
         <Label Content="Select device:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
         <ComboBox x:Name="InterfaceComboBox" HorizontalAlignment="Left" Margin="102,12,0,0" VerticalAlignment="Top" Width="260" SelectionChanged="InterfaceComboBox_SelectionChanged"/>
-        <Button x:Name="ApplyButton" Content="Apply" HorizontalAlignment="Left" Margin="674,44,0,0" VerticalAlignment="Top" Width="46"/>
-        <Button x:Name="ResetButton" Content="Reset" HorizontalAlignment="Left" Margin="725,44,0,0" VerticalAlignment="Top" Width="46" Click="ResetButton_Click"/>
         <StatusBar Margin="0,386,0,0">
             <StatusBarItem>
                 <TextBlock x:Name="StatusText" Text="Not started"></TextBlock>
             </StatusBarItem>
         </StatusBar>
+        <TextBox x:Name="HexContent" HorizontalAlignment="Left" Margin="10,270,0,0" TextWrapping="Wrap" IsReadOnly="True" FontFamily="Courier New" Text="" VerticalAlignment="Top" Width="649" Height="111"/>
+        <Button x:Name="SaveButton" Content="Save to file" HorizontalAlignment="Left" Margin="664,270,0,0" VerticalAlignment="Top" Width="99" Height="26" Click="SaveButton_Click"/>
+        <Button x:Name="LoadButton" Content="Load from file" HorizontalAlignment="Left" Margin="664,301,0,0" VerticalAlignment="Top" Width="99" Height="26" Click="LoadButton_Click"/>
     </Grid>
 </Window>
