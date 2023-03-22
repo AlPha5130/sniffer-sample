@@ -26,11 +26,47 @@ namespace WpfApp1
             rawCapture = capture;
             No = count;
             packet = capture.GetPacket();
+            GetDetail();
         }
 
         private void GetDetail()
         {
-
+            var ipkt = packet.Extract<IPPacket>();
+            if (ipkt == null)
+            {
+                SourceAddress = "N/A";
+                DestinationAddress = "N/A";
+                SourcePort = "N/A";
+                DestinationPort = "N/A";
+                Type = "Unknown";
+                return;
+            }
+            SourceAddress = ipkt.SourceAddress.ToString();
+            DestinationAddress = ipkt.DestinationAddress.ToString();
+            Type = ipkt.Protocol.ToString();
+            switch (ipkt.Protocol)
+            {
+                case ProtocolType.Tcp:
+                    {
+                        var tpkt = ipkt.Extract<TcpPacket>();
+                        SourcePort = tpkt.SourcePort.ToString();
+                        DestinationPort = tpkt.DestinationPort.ToString();
+                        return;
+                    }
+                case ProtocolType.Udp:
+                    {
+                        var upkt = ipkt.Extract<UdpPacket>();
+                        SourcePort = upkt.SourcePort.ToString();
+                        DestinationPort = upkt.DestinationPort.ToString();
+                        return;
+                    }
+                default:
+                    {
+                        SourcePort = "N/A";
+                        DestinationPort = "N/A";
+                        return;
+                    }
+            }
         }
     }
 }
