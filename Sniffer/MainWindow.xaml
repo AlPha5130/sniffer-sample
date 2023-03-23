@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         ResizeMode="CanMinimize"
         Closing="Window_Closing"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Sniffer" Height="450" Width="800">
     <Grid>
         <Button x:Name="StartButton" Content="Start" HorizontalAlignment="Left" Margin="555,10,0,0" VerticalAlignment="Top" Width="66" Height="26" Click="StartButton_Click"/>
         <Button x:Name="StopButton" IsEnabled="False" Content="Stop" HorizontalAlignment="Left" Margin="626,10,0,0" VerticalAlignment="Top" Width="66" Height="26" Click="StopButton_Click"/>
