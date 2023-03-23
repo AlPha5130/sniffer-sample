@@ -97,7 +97,6 @@ namespace Sniffer
             backgroundThread.Start();
 
             device.OnPacketArrival += AddPacketRecord;
-            device.Open();
 
             captureStatistics = device.Statistics;
             UpdateStatistics();
@@ -137,7 +136,16 @@ namespace Sniffer
 
         private void InterfaceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (device != null && device.Started)
+            {
+                device.Close();
+            }
             device = (from d in devices where d.Description == InterfaceComboBox.SelectedItem.ToString() select d).ToArray()[0];
+            if (device != null )
+            {
+                device.Open();
+                FilterComboBox.IsEnabled = true;
+            }
         }
 
         private void ClearUI()
@@ -152,6 +160,12 @@ namespace Sniffer
         {
             packetCount = 0;
             packetQueue = new();
+            if (device != null)
+            {
+                device.Close();
+                device.Open();
+                StatusText.Text = string.Empty;
+            }
         }
 
         private void BackgroundThread()
@@ -313,6 +327,43 @@ namespace Sniffer
                 foreach (var rec in Records)
                 {
                     stream.Write(rec.MakePcapArchive());
+                }
+            }
+        }
+
+        private void FilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selected = (ComboBoxItem?)e.AddedItems[0];
+            if (selected != null && device != null)
+            {
+                switch (selected.Content.ToString())
+                {
+                    case "Ip":
+                        {
+                            device.Filter = "ip or ip6";
+                            break;
+                        }
+                    case "Icmp":
+                        {
+                            device.Filter = "icmp or icmp6";
+                            break;
+                        }
+                    case "(no filter)":
+                        {
+                            device.Filter = string.Empty;
+                            break;
+                        }
+                    case "Http":
+                        {
+                            device.Filter = "tcp port 80 or 443";
+                            break;
+                        }
+                    default:
+                        {
+                            var c = selected.Content.ToString() ?? "ip or ip6";
+                            device.Filter = c.ToLower();
+                            break;
+                        }
                 }
             }
         }

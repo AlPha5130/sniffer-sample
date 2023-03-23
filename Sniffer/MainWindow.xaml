@@ -7,11 +7,11 @@
         mc:Ignorable="d"
         ResizeMode="CanMinimize"
         Closing="Window_Closing"
-        Title="Sniffer" Height="450" Width="800">
+        Title="Sniffer" Height="475" Width="800">
     <Grid>
         <Button x:Name="StartButton" Content="Start" HorizontalAlignment="Left" Margin="555,10,0,0" VerticalAlignment="Top" Width="66" Height="26" Click="StartButton_Click"/>
         <Button x:Name="StopButton" IsEnabled="False" Content="Stop" HorizontalAlignment="Left" Margin="626,10,0,0" VerticalAlignment="Top" Width="66" Height="26" Click="StopButton_Click"/>
-        <ListView x:Name="PacketList" Margin="10,41,10,170" SelectionChanged="PacketList_SelectionChanged" SelectionMode="Single" d:ItemsSource="{d:SampleData ItemCount=5}">
+        <ListView x:Name="PacketList" Margin="10,69,10,152" SelectionChanged="PacketList_SelectionChanged" SelectionMode="Single" d:ItemsSource="{d:SampleData ItemCount=5}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn x:Name="No" Header="#" DisplayMemberBinding="{Binding No}"/>
@@ -28,13 +28,22 @@
         <Button x:Name="ClearButton" Content="Clear" HorizontalAlignment="Left" Margin="697,10,0,0" VerticalAlignment="Top" Width="66" Height="26" Click="ClearButton_Click"/>
         <Label Content="Select device:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
         <ComboBox x:Name="InterfaceComboBox" HorizontalAlignment="Left" Margin="102,12,0,0" VerticalAlignment="Top" Width="260" SelectionChanged="InterfaceComboBox_SelectionChanged"/>
-        <StatusBar Margin="0,386,0,0">
+        <StatusBar Margin="0,416,0,0">
             <StatusBarItem>
                 <TextBlock x:Name="StatusText" Text="Not started"></TextBlock>
             </StatusBarItem>
         </StatusBar>
-        <TextBox x:Name="HexContent" HorizontalAlignment="Left" Margin="10,270,0,0" TextWrapping="Wrap" IsReadOnly="True" FontFamily="Courier New" Text="" VerticalAlignment="Top" Width="649" Height="111"/>
-        <Button x:Name="SaveButton" Content="Save to file" HorizontalAlignment="Left" Margin="664,270,0,0" VerticalAlignment="Top" Width="99" Height="26" Click="SaveButton_Click"/>
-        <Button x:Name="LoadButton" Content="Load from file" HorizontalAlignment="Left" Margin="664,301,0,0" VerticalAlignment="Top" Width="99" Height="26" Click="LoadButton_Click"/>
+        <TextBox x:Name="HexContent" HorizontalAlignment="Left" Margin="10,313,0,0" TextWrapping="Wrap" IsReadOnly="True" FontFamily="Courier New" Text="" VerticalAlignment="Top" Width="649" Height="98"/>
+        <Button x:Name="SaveButton" Content="Save to file" HorizontalAlignment="Left" Margin="680,313,0,0" VerticalAlignment="Top" Width="99" Height="26" Click="SaveButton_Click"/>
+        <Button x:Name="LoadButton" Content="Load from file" HorizontalAlignment="Left" Margin="680,344,0,0" VerticalAlignment="Top" Width="100" Height="26" Click="LoadButton_Click"/>
+        <ComboBox x:Name="FilterComboBox" HorizontalAlignment="Left" Margin="468,41,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="FilterComboBox_SelectionChanged" IsEditable="True" IsEnabled="False">
+            <ComboBoxItem Content="(no filter)" IsSelected="True"/>
+            <ComboBoxItem Content="Ip"/>
+            <ComboBoxItem Content="Http"/>
+            <ComboBoxItem Content="Tcp"/>
+            <ComboBoxItem Content="Udp"/>
+            <ComboBoxItem Content="Icmp"/>
+        </ComboBox>
+        <Label Content="Filter:" HorizontalAlignment="Left" Margin="421,39,0,0" VerticalAlignment="Top"/>
     </Grid>
 </Window>

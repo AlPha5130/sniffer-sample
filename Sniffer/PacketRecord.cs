@@ -82,6 +82,14 @@ namespace Sniffer
                         var tpkt = ipkt.Extract<TcpPacket>();
                         SourcePort = tpkt.SourcePort.ToString();
                         DestinationPort = tpkt.DestinationPort.ToString();
+                        if (tpkt.SourcePort == 80 || tpkt.DestinationPort == 80)
+                        {
+                            Type = "Http";
+                        }
+                        else if (tpkt.SourcePort == 443 || tpkt.DestinationPort == 443)
+                        {
+                            Type = "Https";
+                        }
                         Content = tpkt.Bytes;
                         return;
                     }
@@ -90,6 +98,10 @@ namespace Sniffer
                         var upkt = ipkt.Extract<UdpPacket>();
                         SourcePort = upkt.SourcePort.ToString();
                         DestinationPort = upkt.DestinationPort.ToString();
+                        if (upkt.SourcePort == 53 || upkt.DestinationPort == 53)
+                        {
+                            Type = "Dns";
+                        }
                         Content = upkt.Bytes;
                         return;
                     }
