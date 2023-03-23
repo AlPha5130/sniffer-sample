@@ -1,9 +1,9 @@
-﻿<Window x:Class="WpfApp1.MainWindow"
+﻿<Window x:Class="Sniffer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WpfApp1"
+        xmlns:local="clr-namespace:Sniffer"
         mc:Ignorable="d"
         ResizeMode="CanMinimize"
         Closing="Window_Closing"
@@ -11,7 +11,7 @@
     <Grid>
         <Button x:Name="StartButton" Content="Start" HorizontalAlignment="Left" Margin="555,10,0,0" VerticalAlignment="Top" Width="66" Height="26" Click="StartButton_Click"/>
         <Button x:Name="StopButton" IsEnabled="False" Content="Stop" HorizontalAlignment="Left" Margin="626,10,0,0" VerticalAlignment="Top" Width="66" Height="26" Click="StopButton_Click"/>
-        <ListView x:Name="PacketList" Margin="10,41,10,170" SelectionChanged="PacketList_SelectionChanged" SelectionMode="Single">
+        <ListView x:Name="PacketList" Margin="10,41,10,170" SelectionChanged="PacketList_SelectionChanged" SelectionMode="Single" d:ItemsSource="{d:SampleData ItemCount=5}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn x:Name="No" Header="#" DisplayMemberBinding="{Binding No}"/>
