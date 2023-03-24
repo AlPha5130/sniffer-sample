@@ -286,6 +286,7 @@ namespace Sniffer
             ofd.ShowDialog();
             if (ofd.FileName != "")
             {
+                var filter = device.Filter;
                 device = new CaptureFileReaderDevice(ofd.FileName);
                 ClearUI();
                 ClearCounter();
@@ -296,6 +297,7 @@ namespace Sniffer
                     Records.Add(packet);
                 };
                 device.Open();
+                device.Filter = filter;
                 device.Capture();
                 StatusText.Text = $"Read {no} packets.";
             }
